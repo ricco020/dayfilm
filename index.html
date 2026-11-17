@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>dayfilm: join two-second clips into one film of the day with ffmpeg</title>
+<meta name="description" content="A small shell script that takes the first two seconds of every clip in a folder, in recording order, and joins them into one portrait MP4 with ffmpeg.">
+<style>
+body{margin:0;background:#101010;color:#f2efe6;font:17px/1.6 "Trebuchet MS","Gill Sans",sans-serif}
+main{max-width:760px;margin:0 auto;padding:32px 18px 60px}
+h1{font:700 clamp(30px,7vw,52px)/1.05 Impact,"Arial Narrow Bold",sans-serif;letter-spacing:.01em;text-transform:uppercase;margin:0 0 12px;color:#ffd23f}
+h2{font-size:21px;margin:36px 0 8px;color:#ffd23f}
+pre{background:#1c1c1c;border-left:4px solid #ffd23f;padding:14px;overflow-x:auto;font:14px/1.5 "Courier New",monospace}
+code{font-family:"Courier New",monospace}
+a{color:#ffd23f}
+li{margin-bottom:6px}
+footer{margin-top:40px;font-size:14px;border-top:1px solid #333;padding-top:14px}
+</style>
+</head>
+<body>
+<main>
+<h1>dayfilm</h1>
+<p>Film two seconds, a few times a day. In the evening, one command turns the folder into a single short film. <code>dayfilm.sh</code> is a 40-line shell script around ffmpeg that does exactly that with the clips already on your disk.</p>
+
+<h2>Use it</h2>
+<pre>curl -O https://ricco020.github.io/dayfilm/dayfilm.sh
+chmod +x dayfilm.sh
+./dayfilm.sh ~/Videos/today film.mp4      # first 2 s of each clip
+./dayfilm.sh ~/Videos/today film.mp4 3    # first 3 s instead</pre>
+
+<h2>What it does</h2>
+<ul>
+<li>Reads every <code>.mp4 .mov .m4v .3gp .webm</code> file in the folder, oldest first, so the film follows the day.</li>
+<li>Keeps the first two seconds of each clip.</li>
+<li>Scales and centre-crops every clip to 1080 x 1920 portrait at 30 fps (change with <code>W</code>, <code>H</code>, <code>FPS</code>).</li>
+<li>Gives a silent audio track to clips that have none, so the join never breaks.</li>
+<li>Joins the parts without re-encoding a second time and writes one MP4.</li>
+</ul>
+
+<h2>Why the normalising step matters</h2>
+<p>The ffmpeg concat demuxer copies streams as they are. If one phone records 1080p at 30 fps and another 4K at 60 fps, or one clip has no sound, the joined file plays with frozen frames or drifting audio. Re-encoding every two-second part to the same size, frame rate, pixel format and audio layout first, then joining with <code>-c copy</code>, avoids that. It was tested on three clips of different sizes (640 x 360 at 25 fps without sound, 720 x 1280 at 30 fps, 1920 x 1080 at 60 fps with 48 kHz audio): the output is one 1080 x 1920, 30 fps file with a stereo 44.1 kHz track.</p>
+
+<h2>The same idea with friends</h2>
+<p>The script works for one person and one folder. Doing it as a group (everyone films at the same moments, the clips are gathered and the film is built for you) is what the app <a href="https://klapday.com/">Klapday</a> does: a closed group of friends each film two seconds a few times a day, and in the evening the app turns everyone's clips into one shared film. It is a separate product, free on Android and by invitation only inside each group. See <a href="https://klapday.com/en/">klapday.com</a> for how it works.</p>
+
+<footer>MIT licence. Source on <a href="https://github.com/ricco020/dayfilm">GitHub</a>. Requires ffmpeg 4 or later and bash.</footer>
+</main>
+</body>
+</html>
